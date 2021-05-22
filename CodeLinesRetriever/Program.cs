@@ -1033,10 +1033,17 @@ namespace CodeLinesRetriever
                         DateRange= new List<Tuple<DateTime, DateTime>>{
                             new Tuple<DateTime, DateTime>(new DateTime(2020,12,23),new DateTime(2021,01,19).AddDays(1).AddSeconds(-1))
                         }
+                    },
+                    new Requirement{
+                        Identifier="CC1",
+                        DateRange= new List<Tuple<DateTime, DateTime>>{
+                            new Tuple<DateTime, DateTime>(new DateTime(2021,05,20),new DateTime(2021,05,20).AddDays(1).AddSeconds(-1))
+                        }
                     }
                 };
                 string UserName = "BernardinoChin";
-                string Password = "6bb1c420f57704b2594fc08528227ab390ae089e";
+                //string Password = "6bb1c420f57704b2594fc08528227ab390ae089e";
+                string Password = "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";
 
                 Console.WriteLine("Recuperando información del Repositorio " + Repository + "...");
                 GithubStrategy GitHubStrat = new GithubStrategy(UserName, Password);
@@ -1046,7 +1053,10 @@ namespace CodeLinesRetriever
                     OrganizationIdentifier = Organization,
                     RepositoryIdentifier = Repository,
                     Branches = Branches,
-                    Requirements = Requeriments
+                    Requirements = new List<Requirement> { },
+                    Phases = new List<string> { "SC" },
+                    BetweenStartDate = new DateTime(2021, 05, 20),
+                    BetweenEndDate = new DateTime(2021, 05, 20).AddDays(1).AddSeconds(-1)
                 });
 
 
@@ -1057,7 +1067,6 @@ namespace CodeLinesRetriever
                 throw;
             }
         }
-
 
         public static void HdaSonPDF5_CountLines()
         {

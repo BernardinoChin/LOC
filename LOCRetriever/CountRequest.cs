@@ -8,7 +8,10 @@ namespace LOCRetriever
         public string OrganizationIdentifier { get; set; }
         public string RepositoryIdentifier { get; set; }
         public List<string> Branches { get; set; }
-        public List<Requirement> Requirements { get; set; }        
+        public List<string> Phases { get; set; }
+        public DateTime BetweenStartDate { get; set; }
+        public DateTime BetweenEndDate { get; set; }
+        public List<Requirement> Requirements { get; set; }
         public CommitIgnoreObject CommitIgnore { get; set; }
         public FileIgnoreObject FileIgnore { get; set; }
 
@@ -43,6 +46,9 @@ namespace LOCRetriever
             };
 
             Requirements = new List<Requirement>();
+            Phases = new List<string>();
+            BetweenStartDate = DateTime.MinValue;
+            BetweenEndDate = DateTime.MinValue;
         }
     }
 }

@@ -25,50 +25,42 @@ namespace CodeLinesRetriever
                     Console.ForegroundColor = ConsoleColor.Magenta;
                     Console.WriteLine(i.LinesOfCodeAdded);
 
-                    Requirements.Where(r => r.Identifier == i.Requirement).FirstOrDefault().DateRange.ForEach(dr =>
+
+                    if (Items.Count == 1 && Items.FirstOrDefault().Requirement == "Todos")
                     {
                         Console.WriteLine("");
                         Console.ForegroundColor = ConsoleColor.DarkYellow;
-                        Console.Write(dr.Item1);
-                        Console.Write(" - ");
-                        Console.WriteLine(dr.Item2);
-                        i.Commits.Where(c => DateTime.Parse(c.CreatedAt) >= dr.Item1 && DateTime.Parse(c.CreatedAt) <= dr.Item2.AddDays(1).AddSeconds(-1)).ToList().ForEach(c =>
+                        //Console.Write(dr.Item1);
+                        //Console.Write(" - ");
+                        //Console.WriteLine(dr.Item2);
+                        //i.Commits.Where(c => DateTime.Parse(c.CreatedAt) >= dr.Item1 && DateTime.Parse(c.CreatedAt) <= dr.Item2.AddDays(1).AddSeconds(-1)).ToList().ForEach(c =>
+                        //{
+                        // Console.WriteLine(string.Format("{0} - {1} - {2}", c.CommitId, c.CreatedAt, c.Message));
+                        //});
+                        Items.FirstOrDefault().Commits.ForEach(c =>
                         {
                             Console.WriteLine(string.Format("{0} - {1} - {2}", c.CommitId, c.CreatedAt, c.Message));
                         });
-                    });
-                    Console.WriteLine("");
-                    Console.WriteLine("");
+
+                    }
+                    else
+                    {
+                        Requirements.Where(r => r.Identifier == i.Requirement).FirstOrDefault().DateRange.ForEach(dr =>
+                        {
+                            Console.WriteLine("");
+                            Console.ForegroundColor = ConsoleColor.DarkYellow;
+                            Console.Write(dr.Item1);
+                            Console.Write(" - ");
+                            Console.WriteLine(dr.Item2);
+                            i.Commits.Where(c => DateTime.Parse(c.CreatedAt) >= dr.Item1 && DateTime.Parse(c.CreatedAt) <= dr.Item2.AddDays(1).AddSeconds(-1)).ToList().ForEach(c =>
+                            {
+                                Console.WriteLine(string.Format("{0} - {1} - {2}", c.CommitId, c.CreatedAt, c.Message));
+                            });
+                        });
+                        Console.WriteLine("");
+                        Console.WriteLine("");
+                    }
                 });
-
-
-                //foreach (CountResponseItem Item in Items)
-                //{
-                //    Console.ForegroundColor = ConsoleColor.Green;
-                //    Console.Write("Req: ");
-                //    Console.ForegroundColor = ConsoleColor.Magenta;
-                //    Console.Write(Item.Requirement);
-                //    Console.ForegroundColor = ConsoleColor.Green;
-                //    Console.Write(", LOC: ");
-                //    Console.ForegroundColor = ConsoleColor.Magenta;
-                //    Console.Write(Item.LinesOfCodeAdded);
-
-
-
-                //    Console.WriteLine("");
-
-
-                //    var Commits = Item.Commits.OrderBy(c => c.CreatedAt);
-                //    foreach (var c in Commits)
-                //    {
-                //        Console.ForegroundColor = ConsoleColor.DarkYellow;
-                //        Console.WriteLine(string.Format("{0} - {1} - {2}", c.CommitId, c.CreatedAt, c.Message));
-                //    }
-
-
-                //    Console.ForegroundColor = ConsoleColor.DarkGreen;
-                //    Console.WriteLine("---------------------------------------------------------");
-                //}
 
                 Console.ResetColor();
                 Console.WriteLine("Proceso ejecutado con éxito...");
@@ -100,7 +92,7 @@ namespace CodeLinesRetriever
                         {
                             //Do something
                             break;
-                        }                  
+                        }
                     default:
                         { //Do something
                             break;

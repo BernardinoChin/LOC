@@ -13,7 +13,7 @@ namespace LOCRetriever
     {
         private string BaseUrl = "https://api.github.com/repos";
         private string UserName = string.Empty;
-        private string Password = string.Empty;       
+        private string Password = string.Empty;
 
         public GithubStrategy(string _UserName, string _Password)
         {
@@ -169,7 +169,7 @@ namespace LOCRetriever
         }
 
 
-        public CountResponse CountLines(CountRequest _CountRequest)
+        public CountResponse _CountLines(CountRequest _CountRequest)
         {
             CountResponse Response = new CountResponse();
             List<Commit> Commits = new List<Commit>();
@@ -298,6 +298,132 @@ namespace LOCRetriever
             }
         }
 
+        public CountResponse CountLines(CountRequest _CountRequest)
+        {
+            CountResponse Response = new CountResponse();
+            List<Commit> Commits = new List<Commit>();
+            DateTime BetweenStartDate = new DateTime();
+            DateTime BetweenEndDate = new DateTime();
+
+            try
+            {
+                if (_CountRequest.Branches.Count == 0)
+                {
+                    _CountRequest.Branches = this.GetBranches(_CountRequest.OrganizationIdentifier, _CountRequest.RepositoryIdentifier)
+                        .Select(Branche => Branche.Name)
+                        .ToList();
+                }
+
+
+                BetweenStartDate = _CountRequest.BetweenStartDate == DateTime.MinValue ? GetMinDateInRange(_CountRequest.Requirements) : _CountRequest.BetweenStartDate;
+                BetweenEndDate = _CountRequest.BetweenEndDate == DateTime.MinValue ? GetMaxDateInRange(_CountRequest.Requirements) : _CountRequest.BetweenEndDate;
+                _CountRequest.Branches.ForEach(Branche =>
+                {
+                    Commits.AddRange(GetCommits(new CommitRequest()
+                    {
+                        OrganizationIdentifier = _CountRequest.OrganizationIdentifier,
+                        RepositoryIdentifier = _CountRequest.RepositoryIdentifier,
+                        BrancheIdentifier = Branche,
+                        Since = BetweenStartDate,
+                        Until = BetweenEndDate
+                    }));
+                });
+
+
+                //Commits Únicos y ordenados por fecha. Aplicar exclusión por descripción.
+                Commits = Commits
+                    .GroupBy(Commit => Commit.CommitId)
+                    .Select(UniqueCommit => UniqueCommit.First())
+                    .OrderBy(Commit => Commit.CreatedDate)
+                    .ToList();
+                Commits = ApplyCommitExclusionRules(Commits, _CountRequest.CommitIgnore);
+
+
+                //Filtro por fases.
+                if (_CountRequest.Phases.Count > 0)
+                {
+                    List<Commit> LsCommitsByPhase = new List<Commit>();
+                    _CountRequest.Phases.ForEach(p =>
+                    {
+                        LsCommitsByPhase.AddRange(Commits.Where(c => GetPhase(c.Message) == p));
+                    });
+                    Commits = LsCommitsByPhase;
+                }
+
+
+                //Sin filtro por requerimientos. 
+                if (_CountRequest.Requirements.Count == 0)
+                {
+                    CountResponseItem Item = CountLines(
+                        _CountRequest.OrganizationIdentifier,
+                        _CountRequest.RepositoryIdentifier,
+                        "Todos",
+                        Commits.ToList(),
+                        _CountRequest.FileIgnore
+                    );
+                    Response.CountResponseItems.Add(Item);
+                    return Response;
+                }
+
+
+                //Se se requiere incluir únicamente los commits relacionados a los requerimientos especificados.                
+                List<IGrouping<string, Commit>> CommitGroups = Commits.GroupBy(c => GetIdentity(c.Message)).ToList();
+                _CountRequest.Requirements.ForEach(Requirement =>
+                {
+                    List<Commit> LsCommits = new List<Commit>();
+                    var Group = CommitGroups.Where(g => g.Key.ToLower() == Requirement.Identifier.ToLower()).FirstOrDefault();
+                    if (Group != null)
+                    {
+                        if (Requirement.DateRange.Count > 0)
+                        {
+                            Requirement.DateRange.ForEach(dr =>
+                            {
+                                if (dr.Item1 != null && dr.Item2 != null && dr.Item1 != DateTime.MinValue && dr.Item2 != DateTime.MinValue)
+                                {
+                                    LsCommits.AddRange(
+                                        Group.ToList().Where(c => c.CreatedDate >= dr.Item1 && c.CreatedDate <= dr.Item2)
+                                    );
+                                }
+                            });
+                        }
+                        else
+                        {
+                            LsCommits = Group.ToList();
+                        }
+                    }
+
+
+                    if (LsCommits.Count() > 0)
+                    {
+                        CountResponseItem Item = CountLines(
+                            _CountRequest.OrganizationIdentifier,
+                            _CountRequest.RepositoryIdentifier,
+                            Requirement.Identifier,
+                            LsCommits,
+                            _CountRequest.FileIgnore
+                        );
+                        Response.CountResponseItems.Add(Item);
+                    }
+                    else
+                    {
+                        Response.CountResponseItems.Add(new CountResponseItem()
+                        {
+                            Requirement = Requirement.Identifier,
+                            LinesOfCodeAdded = 0,
+                            Commits = new List<CountResponseCommitItem>()
+                        });
+                    }
+                });
+
+
+                return Response;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
         public CountResponseItem CountLines(string OrganizationIdentifier, string RepositoryIdentifier, string Requirement, List<Commit> Commits, FileIgnoreObject FileIgnore)
         {
             CountResponseItem Response = new CountResponseItem();
@@ -351,6 +477,23 @@ namespace LOCRetriever
                     BaseRequirement = SplitMessage[0] + SplitMessage[2];
 
                 return BaseRequirement;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public string GetPhase(string CommitMesage)
+        {
+            try
+            {
+                string PhaseSection = "CT|PI|PS|SC|LC";
+                string[] SplitMessage = CommitMesage.Split(' ');
+                if (SplitMessage.Length > 1)
+                    PhaseSection = SplitMessage[1]; //[ Req20.1 CT|SC...
+
+                return PhaseSection;
             }
             catch (Exception)
             {
