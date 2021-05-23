@@ -62,6 +62,7 @@
     <Compile Include="Objects\Commit.cs" />
     <Compile Include="Objects\CommitFile.cs" />
     <Compile Include="IRetrieverStrategy.cs" />
+    <Compile Include="Objects\RetrieverException.cs" />
     <Compile Include="Requirement.cs" />
     <Compile Include="RetrieverContext.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

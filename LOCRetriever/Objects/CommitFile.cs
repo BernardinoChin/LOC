@@ -13,16 +13,7 @@ namespace LOCRetriever
 
         public string FileName { get; set; }
 
-        public string FileExtension { get; set; }
-
-        //public string FileExtension
-        //{
-        //    get
-        //    {
-        //        string[] Type = FileName.Split('.');
-        //        return Type[Type.Length - 1];
-        //    }
-        //}
+        public string FileExtension { get; set; }        
 
         public int AddedLines { get; set; }
 

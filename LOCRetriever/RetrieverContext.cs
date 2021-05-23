@@ -4,7 +4,7 @@ namespace LOCRetriever
 {
     public class RetrieverContext
     {
-        private IRetrieverStrategy CurrentStrategy;
+        private readonly IRetrieverStrategy CurrentStrategy;
 
         public RetrieverContext(IRetrieverStrategy _CurrentStrategy)
         {
