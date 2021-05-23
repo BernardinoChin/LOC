@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace CodeLinesRetriever
 {
-    public class Printer
+    public static class Printer
     {
         public static void PrintResult(string RepositoryName, List<Requirement> Requirements, List<CountResponseItem> Items)
         {

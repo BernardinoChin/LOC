@@ -5,9 +5,9 @@ using System.Collections.Generic;
 
 namespace CodeLinesRetriever
 {
-    class Program
+    static class Program
     {
-        protected static void Main(string[] args)
+        static void Main(string[] args)
         {
             try
             {

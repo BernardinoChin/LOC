@@ -3,6 +3,7 @@ using System.Runtime.Serialization;
 
 namespace LOCRetriever.Objects
 {
+    [Serializable]
     public class RetrieverException : SystemException
     {
         public RetrieverException()

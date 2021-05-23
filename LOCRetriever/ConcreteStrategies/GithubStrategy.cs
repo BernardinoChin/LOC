@@ -79,13 +79,14 @@ namespace LOCRetriever
             while (ContinueIteration)
             {
                 RestRequest Request = new RestRequest(
-                    string.Format("{0}/{1}/{2}?per_page=100&page={3}{4}{5}",
+                    string.Format("{0}/{1}/{2}?per_page=100&page={3}{4}{5}{6}",
                     CommitRequest.OrganizationIdentifier,
                     CommitRequest.RepositoryIdentifier,
                     ResourceIdentifier,
                     CurrentPage,
                     CommitRequest.BrancheIdentifier,
-                    StrSince
+                    StrSince,
+                    StrUntil
                 ));
                 var Response = Client.Execute(Request);
 
@@ -324,17 +325,17 @@ namespace LOCRetriever
             CountRequest.Requirements.ForEach(Requirement =>
             {
                 List<Commit> LsCommits = new List<Commit>();
-                var Group = CommitGroups.Where(g => g.Key.ToLower() == Requirement.Identifier.ToLower()).FirstOrDefault();
+                var Group = CommitGroups.FirstOrDefault(g => g.Key.ToLower() == Requirement.Identifier.ToLower());
                 if (Group != null)
                 {
                     if (Requirement.DateRange.Count > 0)
                     {
                         Requirement.DateRange.ForEach(dr =>
                         {
-                            if (dr.Item1 != null && dr.Item2 != null && dr.Item1 != DateTime.MinValue && dr.Item2 != DateTime.MinValue)
+                            if (dr.Item1 != DateTime.MinValue && dr.Item2 != DateTime.MinValue)
                             {
                                 LsCommits.AddRange(
-                                    Group.ToList().Where(c => c.CreatedDate >= dr.Item1 && c.CreatedDate <= dr.Item2)
+                                    Group.Where(c => c.CreatedDate >= dr.Item1 && c.CreatedDate <= dr.Item2)
                                 );
                             }
                         });
@@ -346,7 +347,7 @@ namespace LOCRetriever
                 }
 
 
-                if (LsCommits.Count() > 0)
+                if (LsCommits.Any())
                 {
                     CountResponseItem Item = CountLines(
                         CountRequest.OrganizationIdentifier,
